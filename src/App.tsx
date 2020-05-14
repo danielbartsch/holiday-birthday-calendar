@@ -35,7 +35,7 @@ const DayStyle = ({
 }) => {
   let textColor = undefined
   if (todaysHolidays.length > 0) {
-    textColor = 'green'
+    textColor = '#2abb69'
   }
   if (todaysBirthdays.length > 0) {
     textColor = '#fc0'
