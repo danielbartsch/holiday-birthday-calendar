@@ -37,3 +37,42 @@ td {
 td.date {
   text-align: end;
 }
+
+.modal {
+  padding: 8px;
+  background-color: #383838;
+  position: fixed;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0004;
+}
+
+input {
+  background-color: transparent;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  border: none;
+}
+
+.colorSwatch {
+  position: 'relative';
+  width: 16px;
+  height: 16px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.flexEven {
+  display: flex;
+  justify-content: space-between;
+}
+
+.fullWidth {
+  width: 100%;
+}
