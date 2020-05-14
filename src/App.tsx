@@ -195,7 +195,9 @@ const App = () => {
                       },
                     })
                   )
-                  setStartDay(prev => prev)
+                } else if (appointmentDescription === '') {
+                  const { [date.toString()]: ignored, ...currentDateOmittedEvents } = events
+                  localStorage.setItem('events', JSON.stringify(currentDateOmittedEvents))
                 }
               }}
               title={description}
