@@ -94,6 +94,8 @@ const App = () => {
   const [startDay, setStartDay] = React.useState(getDateWithoutTime(new Date()))
   const [shownDays, setDays] = React.useState(30)
 
+  const events = JSON.parse(localStorage.getItem('events') ?? '{}')
+
   useEventListener('wheel', (event: WheelEvent) => {
     if (event.deltaY !== 0) {
       setStartDay(previousStartDay => addDays(previousStartDay, event.deltaY))
@@ -156,10 +158,47 @@ const App = () => {
 
           const isWorkday = workDays.includes(date.getDay())
           const isWeekend = weekendDays.includes(date.getDay())
+
+          const eventColors = [
+            '#553333',
+            '#594435',
+            '#3e3b26',
+            '#29443f',
+            '#273944',
+            '#332b4d',
+            '#412b4d',
+            '#40233e',
+            '#462324',
+          ]
+
+          const { description, color } = events[date.toString()] ?? {}
+          const backgroundColor = isEqual(date, new Date())
+            ? '#343'
+            : description
+            ? color
+            : undefined
+
           return (
             <tr
               key={`${date}`}
-              style={isEqual(date, new Date()) ? { backgroundColor: '#343' } : undefined}
+              style={backgroundColor ? { backgroundColor } : undefined}
+              onClick={() => {
+                const appointmentDescription = prompt(`Termin für ${date.toString()}`, description)
+                if (appointmentDescription) {
+                  localStorage.setItem(
+                    'events',
+                    JSON.stringify({
+                      ...events,
+                      [date.toString()]: {
+                        description: appointmentDescription,
+                        color: eventColors[parseInt('' + Math.random() * eventColors.length)],
+                      },
+                    })
+                  )
+                  setStartDay(prev => prev)
+                }
+              }}
+              title={description}
             >
               <td className="date">
                 <DayStyle
