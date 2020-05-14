@@ -191,7 +191,7 @@ const App = () => {
           const { description, color } = events[eventKey] ?? {}
           const backgroundColor = isEqual(date, new Date())
             ? '#343'
-            : description
+            : events[eventKey]
             ? color
             : undefined
 
