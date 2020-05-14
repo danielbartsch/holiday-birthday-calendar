@@ -90,11 +90,26 @@ const useTouchDrag = (
   })
 }
 
+type Event = {
+  description: string
+  color: string
+}
+
+type LocalStorageEvents = {
+  [key: string]: Event
+}
+
 const App = () => {
   const [startDay, setStartDay] = React.useState(getDateWithoutTime(new Date()))
   const [shownDays, setDays] = React.useState(30)
+  const [events, setEvents] = React.useState<LocalStorageEvents>(() =>
+    JSON.parse(localStorage.getItem('events') ?? '{}')
+  )
 
-  const events = JSON.parse(localStorage.getItem('events') ?? '{}')
+  const handleSetEvents = (newEvents: LocalStorageEvents) => {
+    setEvents(newEvents)
+    localStorage.setItem('events', JSON.stringify(newEvents))
+  }
 
   useEventListener('wheel', (event: WheelEvent) => {
     if (event.deltaY !== 0) {
@@ -171,7 +186,9 @@ const App = () => {
             '#462324',
           ]
 
-          const { description, color } = events[date.toString()] ?? {}
+          const eventKey = date.toString()
+
+          const { description, color } = events[eventKey] ?? {}
           const backgroundColor = isEqual(date, new Date())
             ? '#343'
             : description
@@ -183,21 +200,22 @@ const App = () => {
               key={`${date}`}
               style={backgroundColor ? { backgroundColor } : undefined}
               onClick={() => {
-                const appointmentDescription = prompt(`Termin für ${date.toString()}`, description)
+                const appointmentDescription = prompt(
+                  `Termin für ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+                  description
+                )
                 if (appointmentDescription) {
-                  localStorage.setItem(
-                    'events',
-                    JSON.stringify({
-                      ...events,
-                      [date.toString()]: {
-                        description: appointmentDescription,
-                        color: eventColors[parseInt('' + Math.random() * eventColors.length)],
-                      },
-                    })
-                  )
+                  const updatedEvents = {
+                    ...events,
+                    [eventKey]: {
+                      description: appointmentDescription,
+                      color: eventColors[parseInt('' + Math.random() * eventColors.length)],
+                    },
+                  }
+                  handleSetEvents(updatedEvents)
                 } else if (appointmentDescription === '') {
-                  const { [date.toString()]: ignored, ...currentDateOmittedEvents } = events
-                  localStorage.setItem('events', JSON.stringify(currentDateOmittedEvents))
+                  const { [eventKey]: ignored, ...currentDateOmittedEvents } = events
+                  handleSetEvents(currentDateOmittedEvents)
                 }
               }}
               title={description}
