@@ -53,10 +53,13 @@ td.date {
   background-color: #0004;
 }
 
-input {
+input,
+textarea {
   background-color: transparent;
   color: white;
   font-family: 'Courier New', Courier, monospace;
+  font-size: 13.35px;
+  resize: none;
   border: none;
 }
 

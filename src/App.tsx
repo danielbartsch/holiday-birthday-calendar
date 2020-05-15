@@ -162,28 +162,42 @@ const EventForm = ({
   return (
     <>
       <div className="flexEven fullWidth">
-        <input
+        <textarea
           autoFocus
-          type="text"
-          className="fullWidth"
+          cols={0}
+          rows={description?.split('\n').length || 1}
+          wrap="off"
           placeholder="Eventbeschreibung"
           value={description}
           onChange={event => setDescription(event.target.value)}
-          onKeyPress={event => {
-            if (event.key === 'Enter') {
-              onDescriptionApply(description)
-            }
-          }}
         />
-        <svg
-          onClick={onDelete}
-          style={{ position: 'relative' }}
-          width="16"
-          height="16"
-          viewBox="0 0 12 12"
+        <div
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
         >
-          <path d="M4,11 l4,0 l2,-6 l-8,0z M2,4 l8,0 l-1,-2 l-6,0z" fill="#f55" />
-        </svg>
+          <svg
+            onClick={() => onDescriptionApply(description)}
+            style={{ position: 'relative', cursor: 'pointer' }}
+            width="16"
+            height="16"
+            viewBox="0 0 12 12"
+          >
+            <path d="M2.5,6 l2,2 l5,-5" strokeWidth={2} fill="none" stroke="#5b5" />
+          </svg>
+          <svg
+            onClick={onDelete}
+            style={{ position: 'relative', cursor: 'pointer' }}
+            width="16"
+            height="16"
+            viewBox="0 0 12 12"
+          >
+            <path d="M4,11 l4,0 l2,-6 l-8,0z M2,4 l8,0 l-1,-2 l-6,0z" fill="#f55" />
+          </svg>
+        </div>
       </div>
       <div className="flexEven fullWidth" style={{ marginTop: 8 }}>
         {eventColors.map(currentColor => (
