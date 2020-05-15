@@ -31,7 +31,7 @@ const DayStyle = ({
   children: React.ReactNode
   date: Date
   todaysHolidays: Array<string>
-  todaysBirthdays: Array<[string, Date]>
+  todaysBirthdays: Array<[string, Date] | [string, Date, Date]>
 }) => {
   let textColor = undefined
   if (todaysHolidays.length > 0) {
@@ -279,11 +279,20 @@ const App = () => {
               .map(([name]) => name)
 
             const todaysBirthdays = birthdays.filter(
-              ([, birthday]) =>
+              ([, birthday, deathDay]) =>
                 birthday.getMonth() === date.getMonth() &&
                 birthday.getDate() === date.getDate() &&
-                date.getFullYear() >= birthday.getFullYear()
+                birthday.getFullYear() <= date.getFullYear() &&
+                (!deathDay || deathDay.getTime() > date.getTime())
             )
+
+            const todaysDeaths = birthdays.filter(
+              ([, , deathDay]) =>
+                deathDay &&
+                deathDay.getMonth() === date.getMonth() &&
+                deathDay.getDate() === date.getDate() &&
+                deathDay.getFullYear() <= date.getFullYear()
+            ) as Array<[string, Date, Date]>
 
             const isWorkday = workDays.includes(date.getDay())
             const isWeekend = weekendDays.includes(date.getDay())
@@ -360,6 +369,15 @@ const App = () => {
                           ([name, birthday]) =>
                             `${name} (${date.getFullYear() - birthday.getFullYear()})`
                         )
+                        .join(', ')
+                    : undefined}
+                  {todaysDeaths.length > 0
+                    ? (todaysBirthdays.length > 0 ? ', ' : '') +
+                      todaysDeaths
+                        .map(([name, , deathDay]) => {
+                          const deathYearsAgo = date.getFullYear() - deathDay.getFullYear()
+                          return `${name} (†${deathYearsAgo === 0 ? '' : ' ' + deathYearsAgo})`
+                        })
                         .join(', ')
                     : undefined}
                 </td>
