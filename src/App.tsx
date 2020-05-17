@@ -166,29 +166,9 @@ const EventForm = ({
           autoFocus
           cols={COLS - 1}
           rows={description?.split('\n').length || 1}
-          wrap="off"
           placeholder="Eventbeschreibung"
           value={description}
-          onChange={event => {
-            const autoLineBreak = event.target.value
-              .split('\n')
-              .map(line => {
-                if (line.length > COLS) {
-                  let wrappedLine = ''
-                  for (let lineSeek = 0; lineSeek < line.length; lineSeek += COLS + 1) {
-                    const remainder = line.slice(lineSeek + COLS)
-
-                    wrappedLine +=
-                      line.slice(lineSeek, lineSeek + COLS) + (remainder ? '\n' + remainder : '')
-                  }
-                  return wrappedLine
-                }
-                return line
-              })
-              .join('\n')
-
-            setDescription(autoLineBreak)
-          }}
+          onChange={event => setDescription(event.target.value)}
         />
         <div
           style={{
