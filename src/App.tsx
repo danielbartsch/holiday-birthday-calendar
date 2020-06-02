@@ -1,5 +1,5 @@
 import React from 'react'
-import { workDays, weekendDays, holidays, weekDays, people } from './config'
+import { workDays, weekendDays, holidays, weekDays, people, Person } from './config'
 import { addDays, isEqual } from './date'
 
 const getDateWithoutTime = (datetime: Date) =>
@@ -31,7 +31,7 @@ const DayStyle = ({
   children: React.ReactNode
   date: Date
   todaysHolidays: Array<string>
-  todaysBirthdays: Array<[string, Date] | [string, Date, Date]>
+  todaysBirthdays: Array<Person>
 }) => {
   let textColor = undefined
   if (todaysHolidays.length > 0) {
@@ -47,7 +47,7 @@ const DayStyle = ({
   }
   tooltip.push(
     ...todaysBirthdays.map(
-      ([name, birthday]) => `${name} (${date.getFullYear() - birthday.getFullYear()})`
+      ({ name, birthday }) => `${name} (${date.getFullYear() - birthday.getFullYear()})`
     )
   )
   return (
@@ -292,7 +292,7 @@ const App = () => {
               .map(([name]) => name)
 
             const todaysBirthdays = people.filter(
-              ([, birthday, deathDay]) =>
+              ({ birthday, deathDay }) =>
                 birthday.getMonth() === date.getMonth() &&
                 birthday.getDate() === date.getDate() &&
                 birthday.getFullYear() <= date.getFullYear() &&
@@ -300,12 +300,12 @@ const App = () => {
             )
 
             const todaysDeaths = people.filter(
-              ([, , deathDay]) =>
+              ({ deathDay }) =>
                 deathDay &&
                 deathDay.getMonth() === date.getMonth() &&
                 deathDay.getDate() === date.getDate() &&
                 deathDay.getFullYear() <= date.getFullYear()
-            ) as Array<[string, Date, Date]>
+            )
 
             const isWorkday = workDays.includes(date.getDay())
             const isWeekend = weekendDays.includes(date.getDay())
@@ -379,7 +379,7 @@ const App = () => {
                   {todaysBirthdays.length > 0
                     ? todaysBirthdays
                         .map(
-                          ([name, birthday]) =>
+                          ({ name, birthday }) =>
                             `${name} (${date.getFullYear() - birthday.getFullYear()})`
                         )
                         .join(', ')
@@ -387,8 +387,8 @@ const App = () => {
                   {todaysDeaths.length > 0
                     ? (todaysBirthdays.length > 0 ? ', ' : '') +
                       todaysDeaths
-                        .map(([name, , deathDay]) => {
-                          const deathYearsAgo = date.getFullYear() - deathDay.getFullYear()
+                        .map(({ name, deathDay }) => {
+                          const deathYearsAgo = date.getFullYear() - (deathDay?.getFullYear() ?? 0)
                           return `${name} (†${deathYearsAgo === 0 ? '' : ' ' + deathYearsAgo})`
                         })
                         .join(', ')

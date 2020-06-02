@@ -26,7 +26,21 @@ export const holidays: Array<[string, (date: Date) => boolean]> = [
   ['Silvester', date => date.getMonth() === 11 && date.getDate() === 31],
 ]
 
-export const birthdays: Array<[string, Date] | [string, Date, Date]> = [
-  ['Daniel Bartsch', new Date(1996, 0, 9)],
-  ['Wolfgang Amadeus Mozart', new Date(1756, 0, 27), new Date(1791, 11, 5)],
+type Who = string
+
+export type Person = {
+  name: string
+  parents: [Who, Who]
+  birthday: Date
+  deathDay?: Date
+}
+
+export const people: Array<Person> = [
+  { name: 'Daniel Bartsch', birthday: new Date(1996, 0, 9), parents: ['unknown', 'unknown'] },
+  {
+    name: 'Wolfgang Amadeus Mozart',
+    birthday: new Date(1756, 0, 27),
+    deathDay: new Date(1791, 11, 5),
+    parents: ['Anna Maria Mozart', 'Leopold Mozart'],
+  },
 ]
