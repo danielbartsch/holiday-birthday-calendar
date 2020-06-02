@@ -1,5 +1,5 @@
 import React from 'react'
-import { workDays, weekendDays, holidays, weekDays, birthdays } from './config'
+import { workDays, weekendDays, holidays, weekDays, people } from './config'
 import { addDays, isEqual } from './date'
 
 const getDateWithoutTime = (datetime: Date) =>
@@ -291,7 +291,7 @@ const App = () => {
               .filter(([, isHoliday]) => isHoliday(date))
               .map(([name]) => name)
 
-            const todaysBirthdays = birthdays.filter(
+            const todaysBirthdays = people.filter(
               ([, birthday, deathDay]) =>
                 birthday.getMonth() === date.getMonth() &&
                 birthday.getDate() === date.getDate() &&
@@ -299,7 +299,7 @@ const App = () => {
                 (!deathDay || deathDay.getTime() > date.getTime())
             )
 
-            const todaysDeaths = birthdays.filter(
+            const todaysDeaths = people.filter(
               ([, , deathDay]) =>
                 deathDay &&
                 deathDay.getMonth() === date.getMonth() &&
