@@ -2,6 +2,8 @@ import React from 'react'
 import { workDays, weekendDays, holidays, weekDays, people, Person } from './config'
 import { addDays, isEqual } from './date'
 
+type Nullable<T> = T | null
+
 const getDateWithoutTime = (datetime: Date) =>
   new Date(datetime.getFullYear(), datetime.getMonth(), datetime.getDate())
 
@@ -96,7 +98,7 @@ type Event = {
 }
 
 type LocalStorageEvents = {
-  [key: string]: Event
+  [key: string]: Array<Event>
 }
 
 type ModalState = {
@@ -151,7 +153,7 @@ const EventForm = ({
   onColorChange,
   onDelete,
 }: {
-  initialEvent: Event
+  initialEvent: Nullable<Event>
   onDescriptionApply: (description: Event['description']) => void
   onColorChange: (color: Event['color']) => void
   onDelete: () => void
@@ -221,7 +223,7 @@ const EventForm = ({
 const App = () => {
   const [startDay, setStartDay] = React.useState(getDateWithoutTime(new Date()))
   const [shownDays, setDays] = React.useState(30)
-  const [events, setEvents] = React.useState<LocalStorageEvents>(() =>
+  const [eventMap, setEvents] = React.useState<LocalStorageEvents>(() =>
     JSON.parse(localStorage.getItem('events') ?? '{}')
   )
   const { modal, open, close } = useModal()
@@ -312,59 +314,68 @@ const App = () => {
 
             const eventKey = date.toString()
 
-            const event = events[eventKey] ?? {}
-            const backgroundColor = isEqual(date, new Date())
-              ? '#343'
-              : event
-              ? event.color
-              : undefined
+            const events = eventMap[eventKey] ?? []
+            const backgroundColor = isEqual(date, new Date()) ? '#343' : undefined
+
+            const handleEditEvent = (
+              event: Nullable<Event>,
+              eventIndex: number,
+              { clientX, clientY }: React.MouseEvent
+            ) => {
+              const modalDimensions = { x: 180, y: 50 }
+              open(
+                <EventForm
+                  key={eventKey}
+                  initialEvent={event}
+                  onDescriptionApply={newDescription => {
+                    if (newDescription) {
+                      const updatedEvents = {
+                        ...eventMap,
+                        [eventKey]: [
+                          ...events.slice(0, eventIndex),
+                          {
+                            description: newDescription,
+                            color:
+                              event?.color ??
+                              eventColors[parseInt('' + Math.random() * eventColors.length)],
+                          },
+                          ...events.slice(eventIndex + 1),
+                        ],
+                      }
+                      handleSetEvents(updatedEvents)
+                    }
+                  }}
+                  onColorChange={newColor => {
+                    const updatedEvents = {
+                      ...eventMap,
+                      [eventKey]: [
+                        ...events.slice(0, eventIndex),
+                        {
+                          description: event?.description ?? '',
+                          color: newColor,
+                        },
+                        ...events.slice(eventIndex + 1),
+                      ],
+                    }
+                    handleSetEvents(updatedEvents)
+                  }}
+                  onDelete={() => {
+                    const updatedEvents = {
+                      ...eventMap,
+                      [eventKey]: [...events.slice(0, eventIndex), ...events.slice(eventIndex + 1)],
+                    }
+                    console.log(eventIndex, events, updatedEvents[eventKey])
+
+                    handleSetEvents(updatedEvents)
+                    close()
+                  }}
+                />,
+                { x: clientX - modalDimensions.x / 2, y: clientY - modalDimensions.y / 2 }
+              )
+            }
 
             return (
-              <tr
-                key={`${date}`}
-                style={backgroundColor ? { backgroundColor } : undefined}
-                onClick={({ clientX, clientY }) => {
-                  const modalDimensions = { x: 180, y: 50 }
-                  open(
-                    <EventForm
-                      key={eventKey}
-                      initialEvent={event}
-                      onDescriptionApply={newDescription => {
-                        if (newDescription) {
-                          const updatedEvents = {
-                            ...events,
-                            [eventKey]: {
-                              description: newDescription,
-                              color:
-                                event.color ??
-                                eventColors[parseInt('' + Math.random() * eventColors.length)],
-                            },
-                          }
-                          handleSetEvents(updatedEvents)
-                        }
-                        close()
-                      }}
-                      onColorChange={newColor => {
-                        const updatedEvents = {
-                          ...events,
-                          [eventKey]: {
-                            description: event.description,
-                            color: newColor,
-                          },
-                        }
-                        handleSetEvents(updatedEvents)
-                      }}
-                      onDelete={() => {
-                        const { [eventKey]: ignored, ...currentDateOmittedEvents } = events
-                        handleSetEvents(currentDateOmittedEvents)
-                        close()
-                      }}
-                    />,
-                    { x: clientX - modalDimensions.x / 2, y: clientY - modalDimensions.y / 2 }
-                  )
-                }}
-                title={event.description}
-              >
+              <tr key={`${date}`} style={backgroundColor ? { backgroundColor } : undefined}>
                 <td className="date">
                   <DayStyle
                     date={date}
@@ -374,7 +385,33 @@ const App = () => {
                     <Day value={date} />
                   </DayStyle>
                 </td>
-                <td>{todaysHolidays.length > 0 ? todaysHolidays.join(', ') : undefined}</td>
+                <td
+                  onClick={onClickEvent => {
+                    handleEditEvent(null, events.length, onClickEvent)
+                  }}
+                  style={{ display: 'flex', justifyContent: 'space-between' }}
+                >
+                  {events.map((event, index) => (
+                    <div
+                      key={index}
+                      title={event.description}
+                      style={{
+                        backgroundColor: event.color,
+                        width: 10,
+                        height: 10,
+                        position: 'relative',
+                        border: '1px solid #888',
+                      }}
+                      onClick={onClickEvent => {
+                        onClickEvent.preventDefault()
+                        onClickEvent.stopPropagation()
+                        handleEditEvent(event, index, onClickEvent)
+                      }}
+                    />
+                  ))}
+                  &nbsp;
+                  {todaysHolidays.length > 0 ? todaysHolidays.join(', ') : undefined}
+                </td>
                 <td>
                   {todaysBirthdays.length > 0
                     ? todaysBirthdays
