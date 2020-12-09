@@ -1,5 +1,6 @@
 import React from 'react'
-import { workDays, weekendDays, holidays, weekDays, people, Person } from './config'
+import { workDays, weekendDays, holidays, weekDays } from './config'
+import { people, Person } from './people'
 import { addDays, isEqual } from './date'
 
 type Nullable<T> = T | null
