@@ -8,13 +8,13 @@ type Nullable<T> = T | null
 const getDateWithoutTime = (datetime: Date) =>
   new Date(datetime.getFullYear(), datetime.getMonth(), datetime.getDate())
 
-const padNumber = (number: number, pad: number, zeros: boolean = true): string => {
+const padNumber = (number: number, pad: number): string => {
   if (pad < 1) {
     return String(number)
   }
   const digits = Math.floor(Math.log10(number)) + 1
   return `${Array.from({ length: pad - digits })
-    .map(() => (zeros ? '0' : ' '))
+    .map(() => '0')
     .join('')}${number}`
 }
 
