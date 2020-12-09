@@ -16,3 +16,32 @@ export const people: Array<Person> = [
     parents: ['Anna Maria Mozart', 'Leopold Mozart'],
   },
 ]
+
+const padNumber = (number: number): string => (number < 10 ? '0' + number : String(number))
+
+const sortMonthThenDay = (a: Person, b: Person) =>
+  a.birthday.getMonth() * 100 +
+  a.birthday.getDate() -
+  (b.birthday.getMonth() * 100 + b.birthday.getDate())
+
+const separator = ','
+
+console.log(
+  [['name', 'birthday'].join(separator)]
+    .concat(
+      people
+        .filter(({ deathDay }) => !deathDay)
+        .sort(sortMonthThenDay)
+        .map(({ name, birthday }) =>
+          [
+            name,
+            [
+              padNumber(birthday.getDate()),
+              padNumber(birthday.getMonth() + 1),
+              birthday.getFullYear(),
+            ].join('.'),
+          ].join(separator)
+        )
+    )
+    .join('\n')
+)
