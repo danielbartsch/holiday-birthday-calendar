@@ -157,8 +157,8 @@ const EventForm = ({
   onColorChange: (color: Event['color']) => void
   onDelete: () => void
 }) => {
-  const [description, setDescription] = React.useState(initialEvent.description)
-  const [color, setColor] = React.useState(initialEvent.color)
+  const [description, setDescription] = React.useState(initialEvent?.description)
+  const [color, setColor] = React.useState(initialEvent?.color)
   const COLS = 20
   return (
     <>
@@ -180,7 +180,7 @@ const EventForm = ({
           }}
         >
           <svg
-            onClick={() => onDescriptionApply(description)}
+            onClick={() => onDescriptionApply(description ?? '')}
             style={{ position: 'relative', cursor: 'pointer' }}
             width="16"
             height="16"
@@ -342,6 +342,7 @@ const App = () => {
                         ],
                       }
                       handleSetEvents(updatedEvents)
+                      close()
                     }
                   }}
                   onColorChange={newColor => {
