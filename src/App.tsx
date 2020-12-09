@@ -13,9 +13,7 @@ const padNumber = (number: number, pad: number): string => {
     return String(number)
   }
   const digits = Math.floor(Math.log10(number)) + 1
-  return `${Array.from({ length: pad - digits })
-    .map(() => '0')
-    .join('')}${number}`
+  return '0'.repeat(pad - digits) + number
 }
 
 const Day = ({ value }: { value: Date }) => (
