@@ -239,8 +239,13 @@ const App = () => {
   })
 
   useEventListener('wheel', (event: WheelEvent) => {
-    if (event.deltaY !== 0) {
-      setStartDay(previousStartDay => addDays(previousStartDay, event.deltaY))
+    const approximateDeltaDays = event.deltaMode === 0 // in pixels
+    	? event.deltaY / 20
+	: event.deltaMode === 1 // in lines
+	    ? event.deltaY
+	    : 15
+    if (approximateDeltaDays !== 0) {
+      setStartDay(previousStartDay => addDays(previousStartDay, approximateDeltaDays))
     }
     if (event.deltaX !== 0) {
       setDays(prevDays => {
