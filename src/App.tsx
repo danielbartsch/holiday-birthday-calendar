@@ -35,11 +35,14 @@ const DayStyle = ({
   todaysBirthdays: Array<Person>
 }) => {
   let textColor = undefined
+  if (todaysBirthdays.length > 0) {
+    textColor = '#fc0'
+  }
   if (todaysHolidays.length > 0) {
     textColor = '#2abb69'
   }
-  if (todaysBirthdays.length > 0) {
-    textColor = '#fc0'
+  if (todaysBirthdays.length > 0 && todaysHolidays.length > 0) {
+    textColor = '#92d347'
   }
 
   let tooltip = todaysHolidays.slice()
@@ -219,9 +222,27 @@ const EventForm = ({
   )
 }
 
+const getScrollDays = (event: WheelEvent) => {
+  if (event.deltaMode === 0) {
+    // deltaX and deltaY are pixels
+    return event.deltaY / 29 // (height of one day/row in pixels)
+  }
+  if (event.deltaMode === 1) {
+    // deltaX and deltaY are lines
+    return event.deltaY // one line should be one day/row
+  }
+  return event.deltaY * 15 // deltaX and deltaY are pages (I assume  either 1 or -1, so scroll half the month)
+}
+
 const App = () => {
   const [startDay, setStartDay] = React.useState(getDateWithoutTime(new Date()))
   const [shownDays, setDays] = React.useState(30)
+  const [showColumns, setShowColumns] = React.useState([
+    'feiertag',
+    'geburtstag',
+    'werktag',
+    'wochenende',
+  ])
   const [eventMap, setEvents] = React.useState<LocalStorageEvents>(() =>
     JSON.parse(localStorage.getItem('events') ?? '{}')
   )
@@ -239,11 +260,7 @@ const App = () => {
   })
 
   useEventListener('wheel', (event: WheelEvent) => {
-    const approximateDeltaDays = event.deltaMode === 0 // in pixels
-    	? event.deltaY / 20
-	: event.deltaMode === 1 // in lines
-	    ? event.deltaY
-	    : 15
+    const approximateDeltaDays = getScrollDays(event)
     if (approximateDeltaDays !== 0) {
       setStartDay(previousStartDay => addDays(previousStartDay, approximateDeltaDays))
     }
@@ -283,10 +300,54 @@ const App = () => {
         <thead>
           <tr>
             <th style={{ width: 150 }}>Datum</th>
-            <th style={{ width: 150 }}>Feiertag</th>
-            <th>Geburtstag</th>
-            <th style={{ width: 20 }}>Werktag</th>
-            <th style={{ width: 20 }}>Wochenende</th>
+            {showColumns.includes('feiertag') && (
+              <th style={{ width: 150 }}>
+                Feiertag{' '}
+                <button
+                  onClick={() =>
+                    setShowColumns(prev => prev.filter(column => column !== 'feiertag'))
+                  }
+                >
+                  x
+                </button>
+              </th>
+            )}
+            {showColumns.includes('geburtstag') && (
+              <th>
+                Geburtstag{' '}
+                <button
+                  onClick={() =>
+                    setShowColumns(prev => prev.filter(column => column !== 'geburtstag'))
+                  }
+                >
+                  x
+                </button>
+              </th>
+            )}
+            {showColumns.includes('werktag') && (
+              <th style={{ width: 20 }}>
+                Werktag{' '}
+                <button
+                  onClick={() =>
+                    setShowColumns(prev => prev.filter(column => column !== 'werktag'))
+                  }
+                >
+                  x
+                </button>
+              </th>
+            )}
+            {showColumns.includes('wochenende') && (
+              <th style={{ width: 20 }}>
+                Wochenende{' '}
+                <button
+                  onClick={() =>
+                    setShowColumns(prev => prev.filter(column => column !== 'wochenende'))
+                  }
+                >
+                  x
+                </button>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -390,54 +451,61 @@ const App = () => {
                     <Day value={date} />
                   </DayStyle>
                 </td>
-                <td
-                  onClick={onClickEvent => {
-                    handleEditEvent(null, events.length, onClickEvent)
-                  }}
-                  style={{ display: 'flex', justifyContent: 'space-between' }}
-                >
-                  {events.map((event, index) => (
-                    <div
-                      key={index}
-                      title={event.description}
-                      style={{
-                        backgroundColor: event.color,
-                        width: 10,
-                        height: 10,
-                        position: 'relative',
-                        border: '1px solid #888',
-                      }}
-                      onClick={onClickEvent => {
-                        onClickEvent.preventDefault()
-                        onClickEvent.stopPropagation()
-                        handleEditEvent(event, index, onClickEvent)
-                      }}
-                    />
-                  ))}
-                  &nbsp;
-                  {todaysHolidays.length > 0 ? todaysHolidays.join(', ') : undefined}
-                </td>
-                <td>
-                  {todaysBirthdays.length > 0
-                    ? todaysBirthdays
-                        .map(
-                          ({ name, birthday }) =>
-                            `${name} (${date.getFullYear() - birthday.getFullYear()})`
-                        )
-                        .join(', ')
-                    : undefined}
-                  {todaysDeaths.length > 0
-                    ? (todaysBirthdays.length > 0 ? ', ' : '') +
-                      todaysDeaths
-                        .map(({ name, deathDay }) => {
-                          const deathYearsAgo = date.getFullYear() - (deathDay?.getFullYear() ?? 0)
-                          return `${name} (†${deathYearsAgo === 0 ? '' : ' ' + deathYearsAgo})`
-                        })
-                        .join(', ')
-                    : undefined}
-                </td>
-                <td>{isWorkday && todaysHolidays.length === 0 ? 'o' : undefined}</td>
-                <td>{isWeekend ? 'o' : undefined}</td>
+                {showColumns.includes('feiertag') && (
+                  <td
+                    onClick={onClickEvent => {
+                      handleEditEvent(null, events.length, onClickEvent)
+                    }}
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    {events.map((event, index) => (
+                      <div
+                        key={index}
+                        title={event.description}
+                        style={{
+                          backgroundColor: event.color,
+                          width: 10,
+                          height: 10,
+                          position: 'relative',
+                          border: '1px solid #888',
+                        }}
+                        onClick={onClickEvent => {
+                          onClickEvent.preventDefault()
+                          onClickEvent.stopPropagation()
+                          handleEditEvent(event, index, onClickEvent)
+                        }}
+                      />
+                    ))}
+                    &nbsp;
+                    {todaysHolidays.length > 0 ? todaysHolidays.join(', ') : undefined}
+                  </td>
+                )}
+                {showColumns.includes('geburtstag') && (
+                  <td>
+                    {todaysBirthdays.length > 0
+                      ? todaysBirthdays
+                          .map(
+                            ({ name, birthday }) =>
+                              `${name} (${date.getFullYear() - birthday.getFullYear()})`
+                          )
+                          .join(', ')
+                      : undefined}
+                    {todaysDeaths.length > 0
+                      ? (todaysBirthdays.length > 0 ? ', ' : '') +
+                        todaysDeaths
+                          .map(({ name, deathDay }) => {
+                            const deathYearsAgo =
+                              date.getFullYear() - (deathDay?.getFullYear() ?? 0)
+                            return `${name} (†${deathYearsAgo === 0 ? '' : ' ' + deathYearsAgo})`
+                          })
+                          .join(', ')
+                      : undefined}
+                  </td>
+                )}
+                {showColumns.includes('werktag') && (
+                  <td>{isWorkday && todaysHolidays.length === 0 ? 'o' : undefined}</td>
+                )}
+                {showColumns.includes('wochenende') && <td>{isWeekend ? 'o' : undefined}</td>}
               </tr>
             )
           })}
