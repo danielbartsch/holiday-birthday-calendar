@@ -229,7 +229,7 @@ const getScrollDays = (event: WheelEvent) => {
   }
   if (event.deltaMode === 1) {
     // deltaX and deltaY are lines
-    return event.deltaY // one line should be one day/row
+    return event.deltaY / 2 // 2 small text lines should be one day/row
   }
   return event.deltaY * 15 // deltaX and deltaY are pages (I assume  either 1 or -1, so scroll half the month)
 }
